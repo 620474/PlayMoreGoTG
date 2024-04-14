@@ -1,0 +1,18 @@
+version: "3"
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    ports:
+    - "5432:5432"
+    volumes:
+    - /Users/maksim/PlayMoreGoTG/data/postgres:/Users/maksim/PlayMoreGoTG/data/postgres
+
+    env_file:
+    - docker.env
+    networks:
+    - postgres
+ 
+networks:
+  postgres:
+    driver: bridge

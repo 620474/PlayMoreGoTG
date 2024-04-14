@@ -1,17 +1,20 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TelegrafModule } from 'nestjs-telegraf';
-import { AppController } from './app.controller';
+import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
+
+import {  AppProvider } from './app.controller';
 import { AppService } from './app.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true,}),
     TelegrafModule.forRoot({
-      token: process.env.TG_TOKEN,
-    })
+      token: process.env.TELEGRAM_BOT_TOKEN,
+    }),
+    ScheduleModule.forRoot(),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [AppService, AppProvider],
 })
 export class AppModule {}
