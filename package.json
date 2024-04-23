@@ -27,6 +27,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/schedule": "^4.0.1",
     "@nestjs/typeorm": "^10.0.2",
+    "mysql": "^2.18.1",
     "nestjs-telegraf": "^2.7.0",
     "pg": "^8.11.5",
     "reflect-metadata": "^0.1.13",
