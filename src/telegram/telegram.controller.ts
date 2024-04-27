@@ -1,5 +1,4 @@
 import { Context, Telegraf } from 'telegraf';
-import { UseMiddleware } from 'nestjs-telegraf';
 import {
   Action,
   Hears,
@@ -12,6 +11,8 @@ import {
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { UserService } from '../User/user.service';
 
+let i = 1;
+
 const add = [
   {
     id: 1,
@@ -21,8 +22,8 @@ const add = [
 ];
 
 function isAdmin(ctx: Context, next: () => Promise<void>) {
-  const user = getUserFromContext(ctx);
-  if (user && user.isAdmin) {
+  const user = {};
+  if (user && user) {
     return next();
   } else {
     ctx.reply('You are not authorized to perform this action.');
@@ -37,10 +38,22 @@ export class TelegramProvider {
   ) {}
 
   @Start()
-  async startCommand(ctx: Context) {
-    console.log(ctx.update);
-    await ctx.reply('Welcome');
-    await ctx.reply('Привязать');
+  async startCommand(ctx) {
+    const { from, text } = ctx.update?.message;
+    const { id, first_name, last_name } = from;
+
+    const res = await this.userService.findByTelegramId(id);
+    if (res?.id) {
+      await ctx.reply(`Добро пожаловать обратно ${first_name} ${last_name}`);
+    } else if (id) {
+      const result = this.userService.create({
+        telegramId: id,
+        name: first_name,
+        lastname: last_name,
+        playMoreGoID: 4,
+      });
+      await ctx.reply(`Добро пожаловать ${first_name} ${last_name}`);
+    }
   }
 
   @Help()
@@ -48,34 +61,9 @@ export class TelegramProvider {
     await ctx.reply('Send me a sticker');
   }
 
-  @On('sticker')
-  async onSticker(ctx: Context) {
-    await ctx.reply('👍');
-  }
-
-  @Hears('Привязать профиль')
-  async getUser(ctx: Context) {
-    await ctx.reply('Привязано');
-  }
-
-  @Hears('Добавить админа')
-  async addAdmin(ctx: Context) {
-    console.log(ctx)
-    await ctx.reply('Привязано');
-  }
-
-
-  @Hears('Послать новость')
-  @UseMiddleware(isAdmin)
-  async sendNews(ctx: Context) {
-
-    await ctx.reply('Привязано');
-  }
-
-  @Hears('hi')
-  async hearsHi(ctx) {
-    console.log(this.bot);
-    await ctx.reply('Hey there');
+  @Hears('*')
+  async sendNews(ctx) {
+    await ctx.reply('This is an admin command.');
   }
 
   @Cron(CronExpression.EVERY_10_HOURS)
