@@ -1,7 +1,7 @@
 import { Context, Telegraf, Markup } from 'telegraf';
 import { HttpService } from '@nestjs/axios';
 import { InjectBot, On, Start, Update } from 'nestjs-telegraf';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 
 import { UserService } from '../User/user.service';
 import { adminsArray } from '../constants/admin';
@@ -24,13 +24,12 @@ export class TelegramProvider {
     if (res?.id) {
       await ctx.reply('Добро пожаловать обратно', first_name);
     } else if (id) {
-      const result = await this.userService.create({
+      await this.userService.create({
         telegramId: id,
         name: first_name,
         lastname: last_name,
         playMoreGoID: PmgId,
       });
-      console.log(result);
       await ctx.reply('Добро пожаловать', first_name);
     }
   }
@@ -70,7 +69,9 @@ export class TelegramProvider {
       const users = await this.userService.finaAll();
       if (users.length > 0) {
         users.map(async (user) => {
-          await this.bot.telegram.sendMessage(user.telegramId, `${message}`);
+          if (user.telegramId !== userId) {
+            await this.bot.telegram.sendMessage(user.telegramId, `${message}`);
+          }
         });
       }
       return ctx.reply('Сообщение отправлено всем пользователям.');

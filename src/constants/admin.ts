@@ -1,1 +1,1 @@
-export const adminsArray = [];
+export const adminsArray = [7071374541];
