@@ -1,24 +1,10 @@
 import { Context, Telegraf, Markup } from 'telegraf';
 import { HttpService } from '@nestjs/axios';
-import {
-  InjectBot,
-  On,
-  Start,
-  Update,
-} from 'nestjs-telegraf';
+import { InjectBot, On, Start, Update } from 'nestjs-telegraf';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { UserService } from '../User/user.service';
 import { adminsArray } from '../constants/admin';
-
-function isAdmin(ctx: Context, next: () => Promise<void>) {
-  const user = {};
-  if (user && user) {
-    return next();
-  } else {
-    ctx.reply('You are not authorized to perform this action.');
-  }
-}
 
 @Update()
 export class TelegramProvider {
@@ -49,7 +35,8 @@ export class TelegramProvider {
     }
   }
 
-  @Cron(CronExpression.EVERY_2_HOURS)
+  // 0 - минут, 15 - часов, каждый день
+  @Cron('0 15 * * *')
   async runCronEvery30Seconds() {
     const users = await this.userService.finaAll();
     if (users.length > 0) {
@@ -69,22 +56,21 @@ export class TelegramProvider {
   async onMessage(ctx) {
     const message = ctx.message?.text;
 
-    if (message && message.startsWith('/sendtoall')) {
+    if (message) {
       const userId = ctx.from.id;
 
       if (!adminsArray.includes(userId)) {
         return ctx.reply('Вы не являетесь администратором.');
       }
 
-      const textToSend = message.replace('/sendtoall', '').trim();
-      if (!textToSend) {
+      if (!message) {
         return ctx.reply('Пожалуйста, укажите сообщение для отправки.');
       }
 
       const users = await this.userService.finaAll();
       if (users.length > 0) {
         users.map(async (user) => {
-          await this.bot.telegram.sendMessage(user.telegramId, `${textToSend}`);
+          await this.bot.telegram.sendMessage(user.telegramId, `${message}`);
         });
       }
       return ctx.reply('Сообщение отправлено всем пользователям.');
