@@ -15,7 +15,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         password: configService.get('MYSQL_PASSWORD'),
         database: 'TG_TEST_db',
         autoLoadEntities: true,
-        synchronize: true,
       }),
     }),
   ],

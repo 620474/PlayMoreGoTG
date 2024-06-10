@@ -1,0 +1,69 @@
+openapi: 3.0.0
+info:
+  title: Players API
+  version: 1.0.0
+paths:
+  /player-profiles:
+    get:
+      summary: Получить списки игроков
+      description: Возвращает массив объектов, содержащих ID и массив ссылок на профили других игроков.
+      parameters:
+        - in: query
+          name: ids
+          schema:
+            type: array
+            items:
+              type: integer
+          required: true
+          description: Массив ID игроков
+      responses:
+        '200':
+          description: Успешный ответ с массивом объектов профилей игроков
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    profileLinks:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        - "https://example.com/profiles/2"
+                        - "https://example.com/profiles/3"
+        '400':
+          description: Неправильный запрос (например, если массив ID не предоставлен)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid request, 'ids' parameter is required."
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error."
+components:
+  schemas:
+    PlayerProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileLinks:
+          type: array
+          items:
+            type: string
