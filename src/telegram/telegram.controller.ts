@@ -1,4 +1,4 @@
-import { Context, Telegraf, Markup } from 'telegraf';
+import { Context, Telegraf } from 'telegraf';
 import { HttpService } from '@nestjs/axios';
 import { InjectBot, On, Start, Update } from 'nestjs-telegraf';
 import { Cron } from '@nestjs/schedule';
@@ -73,8 +73,8 @@ export class TelegramProvider {
             await this.bot.telegram.sendMessage(user.telegramId, `${message}`);
           }
         });
+        ctx.reply('Сообщение отправлено всем пользователям.');
       }
-      return ctx.reply('Сообщение отправлено всем пользователям.');
     }
   }
 }
