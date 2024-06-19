@@ -1,7 +1,7 @@
 import { Context, Telegraf } from 'telegraf';
 import { HttpService } from '@nestjs/axios';
 import { InjectBot, On, Start, Update } from 'nestjs-telegraf';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { UserService } from '../User/user.service';
 import { adminsArray } from '../constants/admin';
@@ -41,7 +41,7 @@ export class TelegramProvider {
     if (users.length > 0) {
       users.map(async (user) => {
         const testAxios = await this.http
-          .get('https://pokeapi.co/api/v2/pokemon/ditto')
+          .get(`https://playmorego.org/api/v1/player-profiles?id=${user.telegramId}&app_key=tg-b4c2d90178c`)
           .toPromise();
         await this.bot.telegram.sendMessage(
           user.telegramId,
