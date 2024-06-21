@@ -43,9 +43,16 @@ export class TelegramProvider {
         const testAxios = await this.http
           .get(`https://playmorego.org/api/v1/player-profiles?id=${user.telegramId}&app_key=tg-b4c2d90178c`)
           .toPromise();
+          let message = 'Список соперников:\n\n';
+          if(testAxios?.data?.items) {
+            testAxios?.data?.items.map(player => {
+              message += `<b>${player.first_name} ${player.last_name}</b>\n`;
+              message += `<a href="${player.profileLink}">Профиль</a>\n\n`;
+            })
+          }
         await this.bot.telegram.sendMessage(
           user.telegramId,
-          `${testAxios.status}`,
+          message,
         );
       });
     }
