@@ -64,7 +64,7 @@ export class TelegramProvider implements OnModuleInit {
             )
             .toPromise();
 
-          let message = 'Список соперников:\n\n';
+          let message = 'Вы можете сыграть с этими игроками:\n\n';
           if (res && res.data && res.data.items) {
             res.data.items.forEach(player => {
               message += `${player.first_name} ${player.last_name}\n`;
