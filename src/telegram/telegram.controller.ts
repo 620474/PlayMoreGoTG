@@ -40,13 +40,20 @@ export class TelegramProvider {
     const users = await this.userService.finaAll();
     if (users.length > 0) {
       users.map(async (user) => {
-        const testAxios = await this.http
-          .get(`https://playmorego.org/api/v1/player-profiles?id=${user.telegramId}&app_key=tg-b4c2d90178c`)
+        const res = await this.http
+          .get(`https://playmorego.org/api/v1/player-profiles?id=${user.playMoreGoID}&app_key=tg-b4c2d90178c`)
           .toPromise();
-        await this.bot.telegram.sendMessage(
-          user.telegramId,
-          `${testAxios.status}`,
-        );
+          let message = 'Список соперников:\n\n';
+          if(res?.data?.items) {
+            res?.data?.items.map(player => {
+              message += `${player.first_name} ${player.last_name}\n`;
+              message += `${player.profileLink}\n\n`;
+            })
+          }
+      await this.bot.telegram.sendMessage(
+        user.telegramId,
+        message,
+      );
       });
     }
   }
@@ -58,22 +65,16 @@ export class TelegramProvider {
     if (message) {
       const userId = ctx.from.id;
 
-      if (!adminsArray.includes(userId)) {
-        return ctx.reply('Вы не являетесь администратором.');
-      }
-
-      if (!message) {
-        return ctx.reply('Пожалуйста, укажите сообщение для отправки.');
-      }
-
-      const users = await this.userService.finaAll();
-      if (users.length > 0) {
-        users.map(async (user) => {
-          if (user.telegramId !== userId) {
-            await this.bot.telegram.sendMessage(user.telegramId, `${message}`);
-          }
-        });
-        ctx.reply('Сообщение отправлено всем пользователям.');
+      if (adminsArray.includes(userId)) {
+        const users = await this.userService.finaAll();
+        if (users.length > 0) {
+          users.map(async (user) => {
+            if (user.telegramId !== userId) {
+              await this.bot.telegram.sendMessage(user.telegramId, `${message}`);
+            }
+          });
+          ctx.reply('Сообщение отправлено всем пользователям.');
+        }
       }
     }
   }
