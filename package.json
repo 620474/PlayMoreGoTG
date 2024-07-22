@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
@@ -30,7 +31,7 @@
     "axios": "^1.6.8",
     "fastify": "^4.26.2",
     "mongodb": "^5.9.2",
-    "mysql": "^2.18.1",
+    "mysql2": "^3.10.3",
     "nestjs-telegraf": "^2.7.0",
     "pg": "^8.11.5",
     "reflect-metadata": "^0.1.13",

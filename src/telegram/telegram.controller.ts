@@ -1,11 +1,17 @@
 import { OnModuleInit, HttpException, Injectable, Logger } from '@nestjs/common';
 import { catchError } from 'rxjs/operators';
 import { Context, Telegraf } from 'telegraf';
+import { LessThanOrEqual, MoreThanOrEqual, Not, Between, Equal } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { HttpService } from '@nestjs/axios';
+import { Repository } from 'typeorm';
 import { InjectBot, On, Start, Update, Command } from 'nestjs-telegraf';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { UserService } from '../User/user.service';
 import { adminsArray } from '../constants/admin';
+import { User } from '../User/user.entity';
+import { Division } from '../User/division.entity';
+import { Member } from '../User/member.entity';
 
 @Injectable()
 @Update()
@@ -15,7 +21,12 @@ export class TelegramProvider implements OnModuleInit {
   constructor(
     @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly userService: UserService,
-    private readonly http: HttpService,
+    @InjectRepository(User, 'userConnection')
+    private userRepository: Repository<User>,
+    @InjectRepository(Division, 'gameConnection')
+    private divisionRepository: Repository<Division>,
+    @InjectRepository(Member, 'gameConnection')
+    private memberRepository: Repository<Member>
   ) {}
 
   async setBotCommands() {
@@ -48,30 +59,48 @@ export class TelegramProvider implements OnModuleInit {
     }
   }
 
-  @Cron('0 11 * * 6')
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async runCronEvery30Seconds() {
     const users = await this.userService.finaAll();
     if (users.length > 0) {
       for (const user of users) {
         try {
-          const res = await this.http
-            .get(`https://playmorego.org/api/v1/player-profiles?id=${user.playMoreGoID}&app_key=tg-b4c2d90178c`)
-            .pipe(
-              catchError(e => {
-                this.logger.error(`Error fetching player profiles: ${e.message}`);
-                return [];
-              }),
-            )
-            .toPromise();
-
-          let message = 'Вы можете сыграть с этими игроками:\n\n';
-          if (res && res.data && res.data.items) {
-            res.data.items.forEach(player => {
-              message += `${player.first_name} ${player.last_name}\n`;
-              message += `${player.profileLink}\n\n`;
-            });
+          const member = await this.memberRepository.findOne({ where: { user_id: user.playMoreGoID } });
+          if (!member) {
+            continue;
           }
 
+          const division = await this.divisionRepository.findOne({
+            where: {
+              min_rating: LessThanOrEqual(member.rating),
+              max_rating: MoreThanOrEqual(member.rating)
+            }
+          });
+
+          if (!division) {
+            continue;
+          }
+
+          const matchingMembers = await this.memberRepository
+          .createQueryBuilder('member')
+          .where('member.user_id != :userId', { userId: user.playMoreGoID })
+          .andWhere('member.rating BETWEEN :minRating AND :maxRating', {
+            minRating: division.min_rating,
+            maxRating: division.max_rating
+          })
+          .orderBy('RAND()')
+          .limit(5)
+          .getMany();
+
+          let message = 'Добрый тебе день!\n\nСистемная практика - важная часть познания игры. А для игры, как известно, нужны двое.\n\nСегодня я подобрал тебе соперников, вот они:\n\n';
+          matchingMembers.forEach(matchingMember => {
+            message += `${matchingMember.first_name} ${matchingMember.last_name}\n`;
+            message += `https://playmorego.org/profile/user/${matchingMember.user_id}\n\n`;
+          });
+          message+='Перейди по ссылке в профиль игрока на playmorego.org и свяжись в соц.сети, которую игроки оставили для связи с ними\n\n'
+          
+          message+='Обязательно занеси результат партии в нашей системе (слово системе это ссылка playmorego.org) регистрации результатов.\n\n'
+          message+='Желаю тебе красивой игры!'
           await this.bot.telegram.sendMessage(user.telegramId, message);
         } catch (error) {
           this.logger.error(`Failed to send message to user ${user.telegramId}: ${error.message}`);

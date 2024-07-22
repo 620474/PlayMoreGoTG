@@ -14,7 +14,7 @@ interface IUser {
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
+    @InjectRepository(User, 'userConnection')
     private usersRepository: Repository<User>,
   ) {}
 
@@ -28,7 +28,6 @@ export class UserService {
       user.name = name;
       user.lastname = lastname;
       user.isAdmin = isAdmin;
-      console.log('user', user);
       return this.usersRepository.save(user);
     }
   }
