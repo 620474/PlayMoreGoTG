@@ -110,14 +110,15 @@ export class TelegramProvider implements OnModuleInit {
 
           let message = 'Добрый тебе день!\n\nСистемная практика - важная часть познания игры. А для игры, как известно, нужны двое.\n\nСегодня я подобрал тебе соперников, вот они:\n\n';
           matchingMembers.forEach(matchingMember => {
-            message += `${matchingMember.first_name} ${matchingMember.last_name}\n`;
-            message += `https://playmorego.org/profile/user/${matchingMember.user_id}\n\n`;
+            message += `<a href="https://playmorego.org/profile/user/${matchingMember.user_id}">${matchingMember.first_name} ${matchingMember.last_name}</a>\n\n`;
           });
           message+='Перейди по ссылке в профиль игрока на playmorego.org и свяжись в соц.сети, которую игроки оставили для связи с ними\n\n'
           
-          message+='Обязательно занеси результат партии в нашей системе (слово системе это ссылка playmorego.org) регистрации результатов.\n\n'
+          message+='Обязательно занеси результат партии в нашей <a href="https://playmorego.org">системе</a> регистрации результатов.\n\n'
           message+='Желаю тебе красивой игры!'
-          await this.bot.telegram.sendMessage(user.telegramId, message);
+          await this.bot.telegram.sendMessage(user.telegramId, message, {
+            parse_mode: 'HTML'
+          });
         } catch (error) {
           this.logger.error(`Failed to send message to user ${user.telegramId}: ${error.message}`);
         }
