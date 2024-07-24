@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from './User/user.entity';
-import { Division } from './User/division.entity';
-import { Member } from './User/member.entity';
+import { Users } from './Users/users.entity';
+import { Divisions } from './Users/divisions.entity';
+import { Members } from './Users/members.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      name: 'userConnection',
+      name: 'usersConnection',
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get('MYSQL_HOST'),
@@ -18,8 +18,7 @@ import { Member } from './User/member.entity';
         username: configService.get('MYSQL_USER'),
         password: configService.get('MYSQL_PASSWORD'),
         database: 'user_tg_db',
-        entities: [User],
-        synchronize: true,
+        entities: [Users]
       }),
     }),
     TypeOrmModule.forRootAsync({
@@ -33,8 +32,7 @@ import { Member } from './User/member.entity';
         username: configService.get('MYSQL_USER'),
         password: configService.get('MYSQL_PASSWORD'),
         database: 'mydatabase',
-        entities: [Division, Member],
-        synchronize: true,
+        entities: [Divisions, Members],
       }),
     }),
   ],

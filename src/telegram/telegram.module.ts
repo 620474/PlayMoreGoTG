@@ -5,15 +5,15 @@ import { TelegramProvider } from './telegram.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { TelegrafModule } from 'nestjs-telegraf';
-import { User } from '../User/user.entity';
-import { UserService } from '../User/user.service';
-import  {Division} from '../User/division.entity'
-import  {Member} from '../User/member.entity'
+import { Users } from '../Users/users.entity';
+import { UsersService } from '../Users/users.service';
+import  {Divisions} from '../Users/divisions.entity'
+import  {Members} from '../Users/members.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User], 'userConnection'),
-    TypeOrmModule.forFeature([Division, Member], 'gameConnection'),
+    TypeOrmModule.forFeature([Users], 'usersConnection'),
+    TypeOrmModule.forFeature([Divisions, Members], 'gameConnection'),
     HttpModule,
     ConfigModule.forRoot({ isGlobal: true }),
     TelegrafModule.forRoot({
@@ -21,6 +21,6 @@ import  {Member} from '../User/member.entity'
     }),
   ],
   controllers: [],
-  providers: [TelegramProvider, UserService],
+  providers: [TelegramProvider, UsersService],
 })
 export class TelegramModule {}

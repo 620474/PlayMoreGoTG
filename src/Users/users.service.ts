@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { Users } from './users.entity';
 
 interface IUser {
   telegramId: number;
@@ -12,17 +12,17 @@ interface IUser {
 }
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(
-    @InjectRepository(User, 'userConnection')
-    private usersRepository: Repository<User>,
+    @InjectRepository(Users, 'usersConnection')
+    private usersRepository: Repository<Users>,
   ) {}
 
-  async create(data: IUser): Promise<User> {
+  async create(data: IUser): Promise<Users> {
     const { telegramId, playMoreGoID, name, lastname, isAdmin } = data;
 
     if (telegramId && name && playMoreGoID) {
-      const user = new User();
+      const user = new Users();
       user.telegramId = telegramId;
       user.playMoreGoID = playMoreGoID;
       user.name = name;
@@ -32,11 +32,11 @@ export class UserService {
     }
   }
 
-  async findByTelegramId(telegramId: number): Promise<User> {
+  async findByTelegramId(telegramId: number): Promise<Users> {
     return this.usersRepository.findOneBy({ telegramId });
   }
 
-  async finaAll(): Promise<User[]> {
+  async finaAll(): Promise<Users[]> {
     return this.usersRepository.find();
   }
 }

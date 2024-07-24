@@ -7,11 +7,11 @@ import { HttpService } from '@nestjs/axios';
 import { Repository } from 'typeorm';
 import { InjectBot, On, Start, Update, Command } from 'nestjs-telegraf';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { UserService } from '../User/user.service';
+import { UsersService } from '../Users/users.service';
 import { adminsArray } from '../constants/admin';
-import { User } from '../User/user.entity';
-import { Division } from '../User/division.entity';
-import { Member } from '../User/member.entity';
+import { Users } from '../Users/users.entity';
+import { Divisions } from '../Users/divisions.entity';
+import { Members } from '../Users/members.entity';
 
 @Injectable()
 @Update()
@@ -20,13 +20,13 @@ export class TelegramProvider implements OnModuleInit {
 
   constructor(
     @InjectBot() private readonly bot: Telegraf<Context>,
-    private readonly userService: UserService,
-    @InjectRepository(User, 'userConnection')
-    private userRepository: Repository<User>,
-    @InjectRepository(Division, 'gameConnection')
-    private divisionRepository: Repository<Division>,
-    @InjectRepository(Member, 'gameConnection')
-    private memberRepository: Repository<Member>
+    private readonly usersService: UsersService,
+    @InjectRepository(Users, 'usersConnection')
+    private usersRepository: Repository<Users>,
+    @InjectRepository(Divisions, 'gameConnection')
+    private divisionsRepository: Repository<Divisions>,
+    @InjectRepository(Members, 'gameConnection')
+    private membersRepository: Repository<Members>
   ) {}
 
   async setBotCommands() {
@@ -44,13 +44,12 @@ export class TelegramProvider implements OnModuleInit {
     const { from, text } = ctx.update?.message;
     const { id, first_name, last_name } = from;
     const PmgId = text.split(' ')[1];
-    console.log(id)
 
-    const res = await this.userService.findByTelegramId(id);
+    const res = await this.usersService.findByTelegramId(id);
     if (res?.id) {
       await ctx.reply(`Привет!
  
-Я рад приветствовать тебя в нашей го-школе. Здесь ты пройдёшь путь от того, кто только интересуется самой дрейней и главной игрой, когда-либо созданной человечеством (хотя есть версия, что её нам подарили Боги), до Игрока (с большой буквы).
+Я рад приветствовать тебя в нашей го-школе. Здесь ты пройдёшь путь от того, кто только интересуется самой древней и главной игрой, когда-либо созданной человечеством (хотя есть версия, что её нам подарили Боги), до Игрока (с большой буквы).
  
 Я Гобот - помощник всех тренеров го-школы. Я буду делать за них важную работу - следить за тем, чтобы твоё познание игры было системным, и тренера могли уделить тебе больше времени в офлайне.
  
@@ -58,7 +57,7 @@ export class TelegramProvider implements OnModuleInit {
  
 Но вместе мы точно справимся, начнём!`);
     } else if (id) {
-      await this.userService.create({
+      await this.usersService.create({
         telegramId: id,
         name: first_name,
         lastname: last_name,
@@ -66,7 +65,7 @@ export class TelegramProvider implements OnModuleInit {
       });
       await ctx.reply(`Привет!
  
-Я рад приветствовать тебя в нашей го-школе. Здесь ты пройдёшь путь от того, кто только интересуется самой дрейней и главной игрой, когда-либо созданной человечеством (хотя есть версия, что её нам подарили Боги), до Игрока (с большой буквы).
+Я рад приветствовать тебя в нашей го-школе. Здесь ты пройдёшь путь от того, кто только интересуется самой древней и главной игрой, когда-либо созданной человечеством (хотя есть версия, что её нам подарили Боги), до Игрока (с большой буквы).
  
 Я Гобот - помощник всех тренеров го-школы. Я буду делать за них важную работу - следить за тем, чтобы твоё познание игры было системным, и тренера могли уделить тебе больше времени в офлайне.
  
@@ -76,34 +75,34 @@ export class TelegramProvider implements OnModuleInit {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async runCronEvery30Seconds() {
-    const users = await this.userService.finaAll();
+    const users = await this.usersService.finaAll();
     if (users.length > 0) {
       for (const user of users) {
         try {
-          const member = await this.memberRepository.findOne({ where: { user_id: user.playMoreGoID } });
+          const member = await this.membersRepository.findOne({ where: { user_id: user.playMoreGoID } });
           if (!member) {
             continue;
           }
 
-          const division = await this.divisionRepository.findOne({
+          const divisions = await this.divisionsRepository.findOne({
             where: {
               min_rating: LessThanOrEqual(member.rating),
               max_rating: MoreThanOrEqual(member.rating)
             }
           });
 
-          if (!division) {
+          if (!divisions) {
             continue;
           }
 
-          const matchingMembers = await this.memberRepository
+          const matchingMembers = await this.membersRepository
           .createQueryBuilder('member')
           .where('member.user_id != :userId', { userId: user.playMoreGoID })
           .andWhere('member.rating BETWEEN :minRating AND :maxRating', {
-            minRating: division.min_rating,
-            maxRating: division.max_rating
+            minRating: divisions.min_rating,
+            maxRating: divisions.max_rating
           })
           .orderBy('RAND()')
           .limit(5)
@@ -138,7 +137,7 @@ export class TelegramProvider implements OnModuleInit {
       const userId = ctx.from.id;
 
       if (adminsArray.includes(userId)) {
-        const users = await this.userService.finaAll();
+        const users = await this.usersService.finaAll();
         if (users.length > 0) {
           for (const user of users) {
             if (user.telegramId !== userId) {

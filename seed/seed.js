@@ -11,7 +11,7 @@ async function seed() {
 
   try {
     // Обновляем или добавляем дивизионы
-    const divisions = [
+    const division = [
       ['Новичок', 0, 1000],
       ['Любитель', 1001, 2000],
       ['Продвинутый', 2001, 3000],
@@ -19,9 +19,9 @@ async function seed() {
       ['Мастер', 4001, 5000]
     ];
 
-    for (const [name, min_rating, max_rating] of divisions) {
+    for (const [name, min_rating, max_rating] of division) {
       await connection.execute(
-        'INSERT INTO division (name, min_rating, max_rating) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE min_rating = VALUES(min_rating), max_rating = VALUES(max_rating)',
+        'INSERT INTO divisions (name, min_rating, max_rating) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE min_rating = VALUES(min_rating), max_rating = VALUES(max_rating)',
         [name, min_rating, max_rating]
       );
     }
@@ -38,7 +38,7 @@ async function seed() {
       };
 
       const query = `
-        INSERT INTO member (user_id, first_name, last_name, rating)
+        INSERT INTO members (user_id, first_name, last_name, rating)
         VALUES (?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           first_name = VALUES(first_name),

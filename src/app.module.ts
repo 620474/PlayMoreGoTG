@@ -6,7 +6,7 @@ import { AppProvider } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database.module';
 import { TelegramModule } from './Telegram/telegram.module';
-import { UserModule } from './User/user.module';
+import { UsersModule } from './Users/users.module';
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { UserModule } from './User/user.module';
     DatabaseModule,
     ScheduleModule.forRoot(),
     TelegramModule,
-    UserModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [AppService, AppProvider],
